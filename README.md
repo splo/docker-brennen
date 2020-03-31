@@ -9,6 +9,20 @@ Cleanup unused Docker resources:
 
 ## Usage
 
+### Install
+
+- On Macos with Homebrew:
+
+```shell
+brew install splo/tap/docker-brennen
+```
+
+- On other OSes by download:
+
+  - Download an archive from <https://github.com/splo/docker-brennen/releases/latest>.
+  - Unzip it.
+  - Move to somewhere in your `$PATH`.
+
 ### Running
 
 - List all Docker resources to remove and ask for confirmation (type `y`) before removing them:

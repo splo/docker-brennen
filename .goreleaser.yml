@@ -1,0 +1,32 @@
+before:
+  hooks:
+    - go mod download
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - darwin
+      - linux
+      - windows
+archives:
+  - format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-snapshot"
+brews:
+  - github:
+      owner: splo
+      name: homebrew-tap
+    commit_author:
+      name: splo
+      email: splo@users.noreply.github.com
+    folder: Formula
+    homepage: "https://github.com/splo/docker-brennen/"
+    description: "Cleanup unused Docker resources."
+    dependencies:
+      - docker
+    test: |
+      assert_match "/usr/local/bin/docker-brennen", shell_output("which docker-brennen")
