@@ -27,3 +27,5 @@
 
 # Goreleaser build directory
 dist
+
+docker-brennen
