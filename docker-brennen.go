@@ -59,7 +59,7 @@ func main() {
 		panic(err)
 	}
 	for _, network := range networks {
-		if network.Name != "bridge" {
+		if network.Name != "bridge" && len(network.Containers) == 0 {
 			items.Networks = append(items.Networks, item{
 				ID:          network.ID,
 				Description: network.Name + "/" + network.Driver,
