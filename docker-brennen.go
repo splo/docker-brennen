@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/docker/docker/api/types"
@@ -24,18 +25,14 @@ type items struct {
 
 func main() {
 	cli, err := client.NewEnvClient()
-	if err != nil {
-		panic(err)
-	}
+	exitOnError(err, "Cannot initialize a Docker API client")
 
 	items := items{}
 
 	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
 		All:     true,
 		Filters: singleArg("status", "exited")})
-	if err != nil {
-		panic(err)
-	}
+	exitOnError(err, "Cannot connect to the Docker daemon")
 	for _, container := range containers {
 		items.Containers = append(items.Containers, item{
 			ID:          container.ID,
@@ -44,9 +41,7 @@ func main() {
 	}
 
 	images, err := cli.ImageList(context.Background(), types.ImageListOptions{Filters: singleArg("dangling", "true")})
-	if err != nil {
-		panic(err)
-	}
+	exitOnError(err, "Cannot connect to the Docker daemon")
 	for _, image := range images {
 		items.Images = append(items.Images, item{
 			ID:          image.ID[7:],
@@ -55,9 +50,7 @@ func main() {
 	}
 
 	networks, err := cli.NetworkList(context.Background(), types.NetworkListOptions{Filters: singleArg("driver", "bridge")})
-	if err != nil {
-		panic(err)
-	}
+	exitOnError(err, "Cannot connect to the Docker daemon")
 	for _, network := range networks {
 		if network.Name != "bridge" && len(network.Containers) == 0 {
 			items.Networks = append(items.Networks, item{
@@ -68,9 +61,7 @@ func main() {
 	}
 
 	volumeList, err := cli.VolumeList(context.Background(), singleArg("dangling", "true"))
-	if err != nil {
-		panic(err)
-	}
+	exitOnError(err, "Cannot connect to the Docker daemon")
 	for _, volume := range volumeList.Volumes {
 		items.Volumes = append(items.Volumes, item{
 			ID:          volume.Name,
@@ -109,9 +100,7 @@ func main() {
 
 		var response string
 		_, err = fmt.Scanln(&response)
-		if err != nil {
-			panic(err)
-		}
+		exitOnError(err, "Cannot read input")
 		if response == "y" {
 			for _, item := range items.Containers {
 				removeContainer(cli, item)
@@ -125,7 +114,16 @@ func main() {
 			for _, item := range items.Volumes {
 				removeVolume(cli, item)
 			}
+		} else {
+			fmt.Println("Nothing has been removed")
 		}
+	}
+}
+
+func exitOnError(err error, message string) {
+	if err != nil {
+		fmt.Fprintln(os.Stderr, message)
+		os.Exit(1)
 	}
 }
 
