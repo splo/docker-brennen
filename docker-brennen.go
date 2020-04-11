@@ -24,12 +24,12 @@ type items struct {
 }
 
 func main() {
-	cli, err := client.NewEnvClient()
+	docker, err := client.NewEnvClient()
 	exitOnError(err, "Cannot initialize a Docker API client")
 
 	items := items{}
 
-	containers, err := cli.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
 		All:     true,
 		Filters: singleArg("status", "exited")})
 	exitOnError(err, "Cannot connect to the Docker daemon")
@@ -40,7 +40,7 @@ func main() {
 		})
 	}
 
-	images, err := cli.ImageList(context.Background(), types.ImageListOptions{Filters: singleArg("dangling", "true")})
+	images, err := docker.ImageList(context.Background(), types.ImageListOptions{Filters: singleArg("dangling", "true")})
 	exitOnError(err, "Cannot connect to the Docker daemon")
 	for _, image := range images {
 		items.Images = append(items.Images, item{
@@ -49,7 +49,7 @@ func main() {
 		})
 	}
 
-	networks, err := cli.NetworkList(context.Background(), types.NetworkListOptions{Filters: singleArg("driver", "bridge")})
+	networks, err := docker.NetworkList(context.Background(), types.NetworkListOptions{Filters: singleArg("driver", "bridge")})
 	exitOnError(err, "Cannot connect to the Docker daemon")
 	for _, network := range networks {
 		if network.Name != "bridge" && len(network.Containers) == 0 {
@@ -60,7 +60,7 @@ func main() {
 		}
 	}
 
-	volumeList, err := cli.VolumeList(context.Background(), singleArg("dangling", "true"))
+	volumeList, err := docker.VolumeList(context.Background(), singleArg("dangling", "true"))
 	exitOnError(err, "Cannot connect to the Docker daemon")
 	for _, volume := range volumeList.Volumes {
 		items.Volumes = append(items.Volumes, item{
@@ -103,16 +103,16 @@ func main() {
 		exitOnError(err, "Cannot read input")
 		if response == "y" {
 			for _, item := range items.Containers {
-				removeContainer(cli, item)
+				removeContainer(docker, item)
 			}
 			for _, item := range items.Images {
-				removeImage(cli, item)
+				removeImage(docker, item)
 			}
 			for _, item := range items.Networks {
-				removeNetwork(cli, item)
+				removeNetwork(docker, item)
 			}
 			for _, item := range items.Volumes {
-				removeVolume(cli, item)
+				removeVolume(docker, item)
 			}
 		} else {
 			fmt.Println("Nothing has been removed")
@@ -133,32 +133,32 @@ func singleArg(name string, value string) filters.Args {
 	return args
 }
 
-func removeContainer(cli *client.Client, item item) {
-	err := cli.ContainerRemove(context.Background(), item.ID, types.ContainerRemoveOptions{})
+func removeContainer(docker *client.Client, item item) {
+	err := docker.ContainerRemove(context.Background(), item.ID, types.ContainerRemoveOptions{})
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("%s %s removed\n", "Container", item.ID[:12])
 }
 
-func removeImage(cli *client.Client, item item) {
-	_, err := cli.ImageRemove(context.Background(), item.ID, types.ImageRemoveOptions{})
+func removeImage(docker *client.Client, item item) {
+	_, err := docker.ImageRemove(context.Background(), item.ID, types.ImageRemoveOptions{})
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("%s %s removed\n", "Image", item.ID[:12])
 }
 
-func removeNetwork(cli *client.Client, item item) {
-	err := cli.NetworkRemove(context.Background(), item.ID)
+func removeNetwork(docker *client.Client, item item) {
+	err := docker.NetworkRemove(context.Background(), item.ID)
 	if err != nil {
 		panic(err)
 	}
 	fmt.Printf("%s %s removed\n", "Network", item.ID[:12])
 }
 
-func removeVolume(cli *client.Client, item item) {
-	err := cli.VolumeRemove(context.Background(), item.ID, false)
+func removeVolume(docker *client.Client, item item) {
+	err := docker.VolumeRemove(context.Background(), item.ID, false)
 	if err != nil {
 		panic(err)
 	}
