@@ -76,4 +76,4 @@ Volume 94bb96074976 removed
 - This is a simple standard [Go](https://golang.org/) project.
 - Go version 1.14 is required.
 - Build using `go build`.
-- Run with `go run .`.
+- Build and run with `go run .` or if already build, simply run `./docker-brennen`.
