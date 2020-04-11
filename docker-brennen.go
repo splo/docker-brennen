@@ -9,6 +9,7 @@ import (
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
 	"github.com/docker/docker/client"
+	"github.com/urfave/cli/v2"
 )
 
 type item struct {
@@ -24,15 +25,36 @@ type items struct {
 }
 
 func main() {
+	app := &cli.App{
+		Name:            "docker-brennen",
+		Usage:           "cleanup unused Docker resources",
+		HideHelpCommand: true,
+		Action: func(c *cli.Context) error {
+			return run()
+		},
+	}
+
+	err := app.Run(os.Args)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err.Error())
+		os.Exit(1)
+	}
+}
+
+func run() error {
 	docker, err := client.NewEnvClient()
-	exitOnError(err, "Cannot initialize a Docker API client")
+	if err != nil {
+		return err
+	}
 
 	items := items{}
 
 	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
 		All:     true,
 		Filters: singleArg("status", "exited")})
-	exitOnError(err, "Cannot connect to the Docker daemon")
+	if err != nil {
+		return err
+	}
 	for _, container := range containers {
 		items.Containers = append(items.Containers, item{
 			ID:          container.ID,
@@ -41,7 +63,9 @@ func main() {
 	}
 
 	images, err := docker.ImageList(context.Background(), types.ImageListOptions{Filters: singleArg("dangling", "true")})
-	exitOnError(err, "Cannot connect to the Docker daemon")
+	if err != nil {
+		return err
+	}
 	for _, image := range images {
 		items.Images = append(items.Images, item{
 			ID:          image.ID[7:],
@@ -50,7 +74,9 @@ func main() {
 	}
 
 	networks, err := docker.NetworkList(context.Background(), types.NetworkListOptions{Filters: singleArg("driver", "bridge")})
-	exitOnError(err, "Cannot connect to the Docker daemon")
+	if err != nil {
+		return err
+	}
 	for _, network := range networks {
 		if network.Name != "bridge" && len(network.Containers) == 0 {
 			items.Networks = append(items.Networks, item{
@@ -61,7 +87,9 @@ func main() {
 	}
 
 	volumeList, err := docker.VolumeList(context.Background(), singleArg("dangling", "true"))
-	exitOnError(err, "Cannot connect to the Docker daemon")
+	if err != nil {
+		return err
+	}
 	for _, volume := range volumeList.Volumes {
 		items.Volumes = append(items.Volumes, item{
 			ID:          volume.Name,
@@ -100,7 +128,9 @@ func main() {
 
 		var response string
 		_, err = fmt.Scanln(&response)
-		exitOnError(err, "Cannot read input")
+		if err != nil {
+			return err
+		}
 		if response == "y" {
 			for _, item := range items.Containers {
 				removeContainer(docker, item)
@@ -118,13 +148,7 @@ func main() {
 			fmt.Println("Nothing has been removed")
 		}
 	}
-}
-
-func exitOnError(err error, message string) {
-	if err != nil {
-		fmt.Fprintln(os.Stderr, message)
-		os.Exit(1)
-	}
+	return nil
 }
 
 func singleArg(name string, value string) filters.Args {
