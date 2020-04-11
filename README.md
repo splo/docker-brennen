@@ -36,7 +36,8 @@ USAGE:
    docker-brennen [global options] [arguments...]
 
 GLOBAL OPTIONS:
-   --help, -h  show help (default: false)
+   --force, -f  remove resources without confirmation prompt (default: false)
+   --help, -h   show help (default: false)
 ```
 
 - List all Docker resources to remove and ask for confirmation (type `y`) before removing them:

@@ -29,8 +29,16 @@ func main() {
 		Name:            "docker-brennen",
 		Usage:           "cleanup unused Docker resources",
 		HideHelpCommand: true,
+		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "force",
+				Aliases: []string{"f"},
+				Usage:   "remove resources without confirmation prompt",
+			},
+		},
 		Action: func(c *cli.Context) error {
-			return run()
+			force := c.Bool("force")
+			return run(force)
 		},
 	}
 
@@ -41,7 +49,7 @@ func main() {
 	}
 }
 
-func run() error {
+func run(confirmed bool) error {
 	docker, err := client.NewEnvClient()
 	if err != nil {
 		return err
@@ -119,19 +127,22 @@ func run() error {
 			fmt.Printf("%s  %s  %s\n", "volume   ", item.ID[:12], item.Description)
 		}
 
-		fmt.Printf("Are you sure you want to remove %d containers, %d images, %d networks and %d volumes? [y/n]\n",
-			containerCount,
-			imageCount,
-			networkCount,
-			volumeCount,
-		)
+		if !confirmed {
+			fmt.Printf("Are you sure you want to remove %d containers, %d images, %d networks and %d volumes? [y/n]\n",
+				containerCount,
+				imageCount,
+				networkCount,
+				volumeCount,
+			)
 
-		var response string
-		_, err = fmt.Scanln(&response)
-		if err != nil {
-			return err
+			var response string
+			_, err = fmt.Scanln(&response)
+			if err != nil {
+				return err
+			}
+			confirmed = response == "y"
 		}
-		if response == "y" {
+		if confirmed {
 			for _, item := range items.Containers {
 				removeContainer(docker, item)
 			}
