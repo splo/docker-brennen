@@ -76,4 +76,26 @@ Volume 94bb96074976 removed
 - This is a simple standard [Go](https://golang.org/) project.
 - Go version 1.14 is required.
 - Build using `go build`.
-- Build and run with `go run .` or if already build, simply run `./docker-brennen`.
+
+### Testing
+
+- Test using `go test`.
+- It needs an actual Docker engine running.
+
+### Running
+
+- Build and run with `go run .`.
+- If already built, simply run `./docker-brennen`.
+
+### CI
+
+- Continuous integration is using a [GitHub Actions](https://help.github.com/en/actions) workflow.
+- They are triggered on every Git pushes.
+
+### Release
+
+- Releases use [GoReleaser](https://goreleaser.com/) with the [`.goreleaser.yml`](./.goreleaser.yml) configuration file.
+- They are triggered on Git tags named `vX.Y.Z` using a GitHub Actions workflow.
+- The GitHub Actions workflow requires to setup the `SPLO_GITHUB_TOKEN` secret.
+- It creates a GitHub release with a changelog text based on Git commit comments that follow [Conventional Commits](https://www.conventionalcommits.org/).
+- It pushes the new macOS binaries to the `splo/tap` [Homebrew](https://brew.sh/) tap.
