@@ -55,54 +55,9 @@ func run(confirmed bool) error {
 		return err
 	}
 
-	items := items{}
-
-	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
-		All:     true,
-		Filters: singleArg("status", "exited")})
+	items, err := gatherItems(docker)
 	if err != nil {
 		return err
-	}
-	for _, container := range containers {
-		items.Containers = append(items.Containers, item{
-			ID:          container.ID,
-			Description: strings.Join(container.Names, ", "),
-		})
-	}
-
-	images, err := docker.ImageList(context.Background(), types.ImageListOptions{Filters: singleArg("dangling", "true")})
-	if err != nil {
-		return err
-	}
-	for _, image := range images {
-		items.Images = append(items.Images, item{
-			ID:          image.ID[7:],
-			Description: strings.Join(image.RepoTags, ", "),
-		})
-	}
-
-	networks, err := docker.NetworkList(context.Background(), types.NetworkListOptions{Filters: singleArg("driver", "bridge")})
-	if err != nil {
-		return err
-	}
-	for _, network := range networks {
-		if network.Name != "bridge" && len(network.Containers) == 0 {
-			items.Networks = append(items.Networks, item{
-				ID:          network.ID,
-				Description: network.Name + "/" + network.Driver,
-			})
-		}
-	}
-
-	volumeList, err := docker.VolumeList(context.Background(), singleArg("dangling", "true"))
-	if err != nil {
-		return err
-	}
-	for _, volume := range volumeList.Volumes {
-		items.Volumes = append(items.Volumes, item{
-			ID:          volume.Name,
-			Description: volume.Mountpoint,
-		})
 	}
 
 	containerCount := len(items.Containers)
@@ -160,6 +115,59 @@ func run(confirmed bool) error {
 		}
 	}
 	return nil
+}
+
+func gatherItems(docker *client.Client) (items, error) {
+	items := items{}
+
+	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
+		All:     true,
+		Filters: singleArg("status", "exited")})
+	if err != nil {
+		return items, nil
+	}
+	for _, container := range containers {
+		items.Containers = append(items.Containers, item{
+			ID:          container.ID,
+			Description: strings.Join(container.Names, ", "),
+		})
+	}
+
+	images, err := docker.ImageList(context.Background(), types.ImageListOptions{Filters: singleArg("dangling", "true")})
+	if err != nil {
+		return items, nil
+	}
+	for _, image := range images {
+		items.Images = append(items.Images, item{
+			ID:          image.ID[7:],
+			Description: strings.Join(image.RepoTags, ", "),
+		})
+	}
+
+	networks, err := docker.NetworkList(context.Background(), types.NetworkListOptions{Filters: singleArg("driver", "bridge")})
+	if err != nil {
+		return items, nil
+	}
+	for _, network := range networks {
+		if network.Name != "bridge" && len(network.Containers) == 0 {
+			items.Networks = append(items.Networks, item{
+				ID:          network.ID,
+				Description: network.Name + "/" + network.Driver,
+			})
+		}
+	}
+
+	volumeList, err := docker.VolumeList(context.Background(), singleArg("dangling", "true"))
+	if err != nil {
+		return items, nil
+	}
+	for _, volume := range volumeList.Volumes {
+		items.Volumes = append(items.Volumes, item{
+			ID:          volume.Name,
+			Description: volume.Mountpoint,
+		})
+	}
+	return items, nil
 }
 
 func singleArg(name string, value string) filters.Args {
