@@ -17,7 +17,7 @@ func TestGatherItems(t *testing.T) {
 	panicOnError(err)
 
 	created, err := cli.ContainerCreate(ctx, &container.Config{
-		Image: "alpine",
+		Image: "docker.io/library/alpine",
 		Tty:   false,
 	}, nil, nil, "")
 	panicOnError(err)
