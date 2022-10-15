@@ -50,7 +50,7 @@ func main() {
 }
 
 func run(confirmed bool) error {
-	docker, err := client.NewEnvClient()
+	docker, err := client.NewClientWithOpts()
 	if err != nil {
 		return err
 	}
