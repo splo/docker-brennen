@@ -27,6 +27,7 @@ brews:
     homepage: "https://github.com/splo/docker-brennen/"
     description: "Cleanup unused Docker resources."
     dependencies:
-      - docker
+      - name: docker
+        type: optional
     test: |
-      assert_match "/usr/local/bin/docker-brennen", shell_output("which docker-brennen")
+      assert_match(/docker-brennen$/, shell_output("which docker-brennen"), "Not correctly installed")
