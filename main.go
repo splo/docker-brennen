@@ -8,6 +8,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/urfave/cli/v2"
 )
@@ -157,7 +158,7 @@ func gatherItems(docker *client.Client) (items, error) {
 		}
 	}
 
-	volumeList, err := docker.VolumeList(context.Background(), singleArg("dangling", "true"))
+	volumeList, err := docker.VolumeList(context.Background(), volume.ListOptions{Filters: singleArg("dangling", "true")})
 	if err != nil {
 		return items, nil
 	}

@@ -93,7 +93,7 @@ func (tc *TestingContext) CreateContainer(image string) string {
 }
 
 func (tc *TestingContext) StartContainer(ID string) {
-	err := tc.cli.ContainerStart(tc.ctx, ID, types.ContainerStartOptions{})
+	err := tc.cli.ContainerStart(tc.ctx, ID, container.StartOptions{})
 	if err != nil {
 		tc.t.Fatal(err)
 	}
@@ -101,7 +101,7 @@ func (tc *TestingContext) StartContainer(ID string) {
 }
 
 func (tc *TestingContext) StopContainer(ID string) {
-	err := tc.cli.ContainerStop(tc.ctx, ID, nil)
+	err := tc.cli.ContainerStop(tc.ctx, ID, container.StopOptions{})
 	if err != nil {
 		tc.t.Fatal(err)
 	}
