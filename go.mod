@@ -3,7 +3,7 @@ module github.com/splo/docker-brennen
 go 1.18
 
 require (
-	github.com/docker/docker v25.0.3+incompatible
+	github.com/docker/docker v25.0.4+incompatible
 	github.com/urfave/cli/v2 v2.27.1
 )
 
