@@ -6,8 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/docker/api/types"
+	"github.com/docker/docker/api/types/container"
 	"github.com/docker/docker/api/types/filters"
+	"github.com/docker/docker/api/types/image"
+	"github.com/docker/docker/api/types/network"
 	"github.com/docker/docker/api/types/volume"
 	"github.com/docker/docker/client"
 	"github.com/urfave/cli/v2"
@@ -121,7 +123,7 @@ func run(confirmed bool) error {
 func gatherItems(docker *client.Client) (items, error) {
 	items := items{}
 
-	containers, err := docker.ContainerList(context.Background(), types.ContainerListOptions{
+	containers, err := docker.ContainerList(context.Background(), container.ListOptions{
 		All:     true,
 		Filters: singleArg("status", "exited")})
 	if err != nil {
@@ -134,7 +136,7 @@ func gatherItems(docker *client.Client) (items, error) {
 		})
 	}
 
-	images, err := docker.ImageList(context.Background(), types.ImageListOptions{Filters: singleArg("dangling", "true")})
+	images, err := docker.ImageList(context.Background(), image.ListOptions{Filters: singleArg("dangling", "true")})
 	if err != nil {
 		return items, nil
 	}
@@ -145,7 +147,7 @@ func gatherItems(docker *client.Client) (items, error) {
 		})
 	}
 
-	networks, err := docker.NetworkList(context.Background(), types.NetworkListOptions{Filters: singleArg("driver", "bridge")})
+	networks, err := docker.NetworkList(context.Background(), network.ListOptions{Filters: singleArg("driver", "bridge")})
 	if err != nil {
 		return items, nil
 	}
@@ -178,7 +180,7 @@ func singleArg(name string, value string) filters.Args {
 }
 
 func removeContainer(docker *client.Client, item item) {
-	err := docker.ContainerRemove(context.Background(), item.ID, types.ContainerRemoveOptions{})
+	err := docker.ContainerRemove(context.Background(), item.ID, container.RemoveOptions{})
 	if err != nil {
 		panic(err)
 	}
@@ -186,7 +188,7 @@ func removeContainer(docker *client.Client, item item) {
 }
 
 func removeImage(docker *client.Client, item item) {
-	_, err := docker.ImageRemove(context.Background(), item.ID, types.ImageRemoveOptions{})
+	_, err := docker.ImageRemove(context.Background(), item.ID, image.RemoveOptions{})
 	if err != nil {
 		panic(err)
 	}

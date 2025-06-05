@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/container"
+	"github.com/docker/docker/api/types/image"
 	"github.com/docker/docker/client"
 )
 
@@ -57,8 +57,8 @@ type TestingContext struct {
 	cli *client.Client
 }
 
-func (tc *TestingContext) PullImage(image string) {
-	reader, err := tc.cli.ImagePull(tc.ctx, image, types.ImagePullOptions{})
+func (tc *TestingContext) PullImage(imageName string) {
+	reader, err := tc.cli.ImagePull(tc.ctx, imageName, image.PullOptions{})
 	if err != nil {
 		tc.t.Fatal(err)
 	}
@@ -121,7 +121,7 @@ func (tc *TestingContext) WaitContainerStopped(ID string) {
 }
 
 func (tc *TestingContext) RemoveContainer(ID string) {
-	err := tc.cli.ContainerRemove(tc.ctx, ID, types.ContainerRemoveOptions{RemoveVolumes: true, Force: true})
+	err := tc.cli.ContainerRemove(tc.ctx, ID, container.RemoveOptions{RemoveVolumes: true, Force: true})
 	if err != nil {
 		tc.t.Fatal(err)
 	}

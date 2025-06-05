@@ -81,8 +81,13 @@ Volume 94bb96074976 removed
 
 - Test using `go test`.
 - It needs an actual Docker engine running.
+- If you get an error like `Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?`, try setting the `DOCKER_HOST` environment variable to the right path. On macOS with Docker Desktop it might be located at `~/.docker/run/docker.sock`:
 
-### Running
+  ```sh
+  DOCKER_HOST=unix://$HOME/.docker/run/docker.sock go test
+  ```
+
+### Running While Developping
 
 - Build and run with `go run .`.
 - If already built, simply run `./docker-brennen`.
