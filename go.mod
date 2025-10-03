@@ -5,7 +5,7 @@ go 1.23.0
 toolchain go1.24.3
 
 require (
-	github.com/docker/docker v28.4.0+incompatible
+	github.com/docker/docker v28.5.0+incompatible
 	github.com/urfave/cli/v2 v2.27.7
 )
 
